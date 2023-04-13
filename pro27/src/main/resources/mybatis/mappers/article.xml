@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.article">
+	<resultMap id="artResult" type="articleVO">
+		<result property="articleNO" column="articleNO" />
+		<result property="parentNO" column="parentNO" />
+		<result property="title" column="title" />
+		<result property="content" column="content" />
+		<result property="imageFileName" column="imageFileName" />
+		<result property="level" column="level" />
+		<result property="writeDate" column="writeDate" />
+		<result property="id" column="id" />
+	</resultMap>
+
+
+	<select id="selectAllArticlesList" resultMap="artResult">
+	<![CDATA[
+		select case when level-1 > 0 then
+concat(concat(repeat('  ', level-1),'<'), board.title) else board.title end as title, board.articleNO, board.parentNO, result.level, board.content, board.id, board.writeDate
+from (select function_hierarchical() as articleNO, @level as level
+from (select @start_with:=0, @articleNo:=@start_with, @level:=0) tbl join t_board) result
+join t_board board on board.articleNO = result.articleNO
+	]]>
+	</select>
+
+	<select id="articleForm" resultType="articleVO"
+		parameterType="String">
+	<![CDATA[
+		select * from t_member where id = #{id}
+	]]>
+	</select>
+
+	<insert id="insertNewArticle" parameterType="articleVO" >
+		<![CDATA[
+			insert into t_board (title, content, imageFileName, id)
+						value(#{title},#{content},#{imageFileName},#{id})
+		]]>
+	</insert>
+
+
+
+
+</mapper>
